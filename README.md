@@ -1,4 +1,5 @@
-####ExpenseTracker Android App
+#ExpenseTracker Android App
+
 ExpenseTracker is a comprehensive Android application to help users track their expenses, analyze spending patterns, and manage finances effectively.
 Features
 
