@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Expense Tracker</string>
+    <string name="greeting">Hi Kailash</string>
+    <string name="total_expenses">Total Expenses Till Now</string>
+    <string name="view_all">View All</string>
+    <string name="overall_expenses">OVERALL EXPENSES</string>
+    <string name="total_income">Total Income</string>
+    <string name="bank_balance">Bank Balance</string>
+    <string name="total_goals">Total Goals</string>
+    <string name="set_budget">SET BUDGET</string>
+    <string name="top_expenses">TOP EXPENSES</string>
+    <string name="add_expense">ADD EXPENSE</string>
+    <string name="amount">Amount</string>
+    <string name="category">Category</string>
+    <string name="description">Description</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="action_statistics">Statistics</string>
+    <string name="action_logout">Logout</string>
+    <string name="expense_added">Expense added successfully</string>
+    <string name="budget_updated">Budget updated successfully</string>
+    <string name="error_invalid_amount">Please enter a valid amount</string>
+    <string name="error_invalid_numbers">Please enter valid numbers</string>
+
+    <string-array name="expense_categories">
+        <item>Groceries</item>
+        <item>Transportation</item>
+        <item>Housing</item>
+        <item>Utilities</item>
+        <item>Entertainment</item>
+        <item>Dining</item>
+        <item>Shopping</item>
+        <item>Healthcare</item>
+        <item>Education</item>
+        <item>Personal care</item>
+        <item>Clothing</item>
+        <item>Eating out</item>
+        <item>Fuel</item>
+        <item>Others</item>
+    </string-array>
+</resources>

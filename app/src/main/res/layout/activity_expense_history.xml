@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#121212"
+    android:padding="16dp"
+    tools:context=".ExpenseHistoryActivity">
+
+    <TextView
+        android:id="@+id/historyTitleText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Expenses"
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:paddingBottom="16dp" />
+
+    <TextView
+        android:id="@+id/totalExpenseHistoryText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Expenses: $0.00"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="16dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/expenseHistoryRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
