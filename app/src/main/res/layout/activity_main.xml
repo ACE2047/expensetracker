@@ -135,7 +135,7 @@
         app:layout_constraintTop_toBottomOf="@+id/chartTitle">
 
         <!-- Pie Chart View -->
-        <com.example.expensetracker.PieChartView
+        <com.example.expensetracker.AnimatedPieChartView
             android:id="@+id/pieChart"
             android:layout_width="0dp"
             android:layout_height="180dp"

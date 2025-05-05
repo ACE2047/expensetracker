@@ -29,7 +29,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private TextView totalExpenseText, welcomeText;
-    private PieChartView pieChart;
+    private AnimatedPieChartView pieChart;
     private RecyclerView topExpensesRecyclerView;
     private RecyclerView categoriesLegendRecyclerView;
     private ExpenseAdapter expenseAdapter;
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create list of pie slices for the chart
         ArrayList<String> categories = new ArrayList<>(categoryTotals.keySet());
-        List<PieChartView.PieSlice> pieSlices = new ArrayList<>();
+        List<AnimatedPieChartView.PieSlice> pieSlices = new ArrayList<>();
         List<CategoryLegendAdapter.CategoryLegendItem> legendItems = new ArrayList<>();
 
         // Calculate total for percentage calculation
@@ -389,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             float percentage = (value / totalAmount) * 100;
             String displayName = category + " (" + String.format("%.0f", percentage) + "%)";
 
-            pieSlices.add(new PieChartView.PieSlice(
+            pieSlices.add(new AnimatedPieChartView.PieSlice(
                     category,
                     value,
                     color
