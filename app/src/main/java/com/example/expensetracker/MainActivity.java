@@ -21,14 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.utils.MPPointF;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +29,9 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private TextView totalExpenseText, welcomeText;
-    private PieChart pieChart;
+    private PieChartView pieChart;
     private RecyclerView topExpensesRecyclerView;
-    private RecyclerView categoriesLegendRecyclerView; // ✅ Added legend RecyclerView
+    private RecyclerView categoriesLegendRecyclerView;
     private ExpenseAdapter expenseAdapter;
     private ExpenseDBHelper dbHelper;
     private TextView incomeText, balanceText, goalText;
@@ -66,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Check if user is logged in
         SharedPreferences prefs = getSharedPreferences("expense_tracker", MODE_PRIVATE);
         currentUserId = prefs.getInt("current_user_id", -1);
         currentUsername = prefs.getString("current_username", "");
@@ -80,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new ExpenseDBHelper(this);
 
+        // Initialize views
         welcomeText = findViewById(R.id.welcomeText);
         totalExpenseText = findViewById(R.id.totalExpenseText);
         pieChart = findViewById(R.id.pieChart);
@@ -91,17 +85,21 @@ public class MainActivity extends AppCompatActivity {
         addExpenseButton = findViewById(R.id.addExpenseButton);
         viewAllText = findViewById(R.id.viewAllText);
         logoutButton = findViewById(R.id.logoutButton);
-        categoriesLegendRecyclerView = findViewById(R.id.categoriesLegendRecyclerView); // ✅ Init legend RecyclerView
+        categoriesLegendRecyclerView = findViewById(R.id.categoriesLegendRecyclerView);
         categoriesLegendRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         welcomeText.setText("Welcome, " + currentUsername + "!");
 
         topExpensesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Set up logout button
         logoutButton.setOnClickListener(v -> logout());
 
+        // Load user financial info
+        loadUserFinancialInfo();
         loadData();
 
+        // Set up button listeners
         addExpenseButton.setOnClickListener(v -> showAddExpenseDialog());
         setBudgetButton.setOnClickListener(v -> showSetBudgetDialog());
 
@@ -110,6 +108,42 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("user_id", currentUserId);
             startActivityForResult(intent, EXPENSE_HISTORY_REQUEST_CODE);
         });
+    }
+
+    // Load user-specific financial information
+    private void loadUserFinancialInfo() {
+        SharedPreferences prefs = getSharedPreferences("expense_tracker_user_" + currentUserId, MODE_PRIVATE);
+        totalIncome = prefs.getFloat("income", 60000.0f);
+        totalBalance = prefs.getFloat("balance", 3200.0f);
+        totalGoal = prefs.getFloat("goal", 13000.0f);
+
+        // Update UI with the loaded values
+        incomeText.setText("Income: $" + String.format("%.2f", totalIncome));
+        balanceText.setText("Balance: $" + String.format("%.2f", totalBalance));
+        goalText.setText("Goal: $" + String.format("%.2f", totalGoal));
+    }
+
+    // Save user-specific financial information
+    private void saveUserFinancialInfo() {
+        // Read current values from UI instead of using class variables
+        try {
+            String incomeStr = incomeText.getText().toString().replace("Income: $", "").trim();
+            String balanceStr = balanceText.getText().toString().replace("Balance: $", "").trim();
+            String goalStr = goalText.getText().toString().replace("Goal: $", "").trim();
+
+            totalIncome = Double.parseDouble(incomeStr);
+            totalBalance = Double.parseDouble(balanceStr);
+            totalGoal = Double.parseDouble(goalStr);
+        } catch (Exception e) {
+            // In case of parsing errors, use the class variables
+        }
+
+        // Save to user-specific SharedPreferences
+        SharedPreferences.Editor editor = getSharedPreferences("expense_tracker_user_" + currentUserId, MODE_PRIVATE).edit();
+        editor.putFloat("income", (float) totalIncome);
+        editor.putFloat("balance", (float) totalBalance);
+        editor.putFloat("goal", (float) totalGoal);
+        editor.apply();
     }
 
     @Override
@@ -139,6 +173,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Called when the app is being closed or put in background
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Save financial info when the app is paused
+        saveUserFinancialInfo();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Also save when the app is stopped
+        saveUserFinancialInfo();
+    }
+
     private void loadData() {
         // Load expenses from database
         List<Expense> expenses = dbHelper.getAllExpenses(currentUserId);
@@ -157,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         balanceText.setText("Balance: $" + String.format("%.2f", totalBalance));
         goalText.setText("Goal: $" + String.format("%.2f", totalGoal));
 
-        // Set up pie chart
+        // Set up simplified pie chart representation
         setupPieChart(expenses);
 
         // Show top expenses (limit to 5)
@@ -237,17 +286,13 @@ public class MainActivity extends AppCompatActivity {
                             totalBalance = Double.parseDouble(balanceInput.getText().toString());
                             totalGoal = Double.parseDouble(goalInput.getText().toString());
 
-                            // Save to SharedPreferences
-                            SharedPreferences.Editor editor = getSharedPreferences("expense_tracker", MODE_PRIVATE).edit();
-                            editor.putFloat("income", (float) totalIncome);
-                            editor.putFloat("balance", (float) totalBalance);
-                            editor.putFloat("goal", (float) totalGoal);
-                            editor.apply();
-
                             // Update UI
                             incomeText.setText("Income: $" + String.format("%.2f", totalIncome));
                             balanceText.setText("Balance: $" + String.format("%.2f", totalBalance));
                             goalText.setText("Goal: $" + String.format("%.2f", totalGoal));
+
+                            // Save to user-specific SharedPreferences immediately
+                            saveUserFinancialInfo();
 
                             Toast.makeText(MainActivity.this, "Financial info updated", Toast.LENGTH_SHORT).show();
                         } catch (NumberFormatException e) {
@@ -260,35 +305,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logout() {
+        // Force save the user's financial info before logging out
+        saveUserFinancialInfo();
+
+        // Double-check save was successful by verifying the SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("expense_tracker_user_" + currentUserId, MODE_PRIVATE);
+        float savedIncome = prefs.getFloat("income", -1f);
+
+        // If save failed, try once more
+        if (savedIncome < 0) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putFloat("income", (float) totalIncome);
+            editor.putFloat("balance", (float) totalBalance);
+            editor.putFloat("goal", (float) totalGoal);
+            editor.apply();
+        }
+
+        // Clear current user session
         SharedPreferences.Editor editor = getSharedPreferences("expense_tracker", MODE_PRIVATE).edit();
         editor.remove("current_user_id");
         editor.remove("current_username");
         editor.apply();
+
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }
 
-    // ✅ REPLACED setupPieChart
     private void setupPieChart(List<Expense> expenses) {
-        pieChart.clear();
-        pieChart.setUsePercentValues(true);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setExtraOffsets(5, 10, 5, 5);
-        pieChart.setDragDecelerationFrictionCoef(0.95f);
-        pieChart.setDrawHoleEnabled(true);
-        pieChart.setHoleColor(Color.parseColor("#121212"));
-        pieChart.setTransparentCircleColor(Color.WHITE);
-        pieChart.setTransparentCircleAlpha(110);
-        pieChart.setHoleRadius(45f);
-        pieChart.setTransparentCircleRadius(48f);
-        pieChart.setCenterText("Expenses");
-        pieChart.setCenterTextSize(18f);
-        pieChart.setCenterTextColor(Color.WHITE);
-        pieChart.getLegend().setEnabled(false);
-        pieChart.setRotationAngle(0);
-        pieChart.setRotationEnabled(true);
-        pieChart.setHighlightPerTapEnabled(true);
-
         Map<String, Float> categoryTotals = new HashMap<>();
         for (Expense expense : expenses) {
             categoryTotals.merge(expense.getCategory(), (float) expense.getAmount(), Float::sum);
@@ -304,22 +347,18 @@ public class MainActivity extends AppCompatActivity {
             categoryTotals.put("Entertainment", 400f);
         }
 
-        List<PieEntry> entries = new ArrayList<>();
-        for (Map.Entry<String, Float> entry : categoryTotals.entrySet()) {
-            entries.add(new PieEntry(entry.getValue(), entry.getKey()));
-        }
-
+        // Create colors for the chart
         ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.rgb(64, 89, 128));
-        colors.add(Color.rgb(149, 165, 124));
-        colors.add(Color.rgb(217, 184, 162));
-        colors.add(Color.rgb(191, 134, 134));
-        colors.add(Color.rgb(179, 48, 80));
-        colors.add(Color.rgb(193, 37, 82));
-        colors.add(Color.rgb(255, 102, 0));
-        colors.add(Color.rgb(245, 199, 0));
-        colors.add(Color.rgb(106, 150, 31));
-        colors.add(Color.rgb(179, 100, 53));
+        colors.add(Color.rgb(255, 102, 0));    // Housing - Orange
+        colors.add(Color.rgb(149, 165, 124));  // Groceries - Sage Green
+        colors.add(Color.rgb(191, 134, 134));  // Transportation - Dusty Rose
+        colors.add(Color.rgb(64, 89, 128));    // Utilities - Navy Blue
+        colors.add(Color.rgb(179, 48, 80));    // Healthcare - Deep Red
+        colors.add(Color.rgb(106, 150, 31));   // Dining Out - Green
+        colors.add(Color.rgb(217, 184, 162));  // Entertainment - Light Beige
+        colors.add(Color.rgb(245, 199, 0));    // Yellow
+        colors.add(Color.rgb(193, 37, 82));    // Raspberry
+        colors.add(Color.rgb(179, 100, 53));   // Brown
 
         while (colors.size() < categoryTotals.size()) {
             int index = colors.size() % 10;
@@ -330,35 +369,43 @@ public class MainActivity extends AppCompatActivity {
             ));
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "");
-        dataSet.setSliceSpace(3f);
-        dataSet.setIconsOffset(new MPPointF(0, 40));
-        dataSet.setSelectionShift(5f);
-        dataSet.setColors(colors);
-        dataSet.setValueLinePart1OffsetPercentage(80.f);
-        dataSet.setValueLinePart1Length(0.2f);
-        dataSet.setValueLinePart2Length(0.4f);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-
-        PieData data = new PieData(dataSet);
-        data.setValueFormatter(new PercentFormatter(pieChart));
-        data.setValueTextSize(14f);
-        data.setValueTextColor(Color.WHITE);
-        pieChart.setData(data);
-        pieChart.setEntryLabelColor(Color.WHITE);
-        pieChart.animateY(1400, Easing.EaseInOutQuad);
-
+        // Create list of pie slices for the chart
+        ArrayList<String> categories = new ArrayList<>(categoryTotals.keySet());
+        List<PieChartView.PieSlice> pieSlices = new ArrayList<>();
         List<CategoryLegendAdapter.CategoryLegendItem> legendItems = new ArrayList<>();
-        for (int i = 0; i < entries.size(); i++) {
+
+        // Calculate total for percentage calculation
+        float totalAmount = 0f;
+        for (String category : categories) {
+            totalAmount += categoryTotals.get(category);
+        }
+
+        for (int i = 0; i < categories.size(); i++) {
+            String category = categories.get(i);
+            float value = categoryTotals.get(category);
+            int color = colors.get(i % colors.size());
+
+            // Calculate percentage for display in legend
+            float percentage = (value / totalAmount) * 100;
+            String displayName = category + " (" + String.format("%.0f", percentage) + "%)";
+
+            pieSlices.add(new PieChartView.PieSlice(
+                    category,
+                    value,
+                    color
+            ));
+
             legendItems.add(new CategoryLegendAdapter.CategoryLegendItem(
-                    entries.get(i).getLabel(),
-                    colors.get(i % colors.size())
+                    displayName,
+                    color
             ));
         }
 
+        // Set the data for the pie chart
+        pieChart.setSlices(pieSlices);
+
+        // Set up the legend adapter
         CategoryLegendAdapter legendAdapter = new CategoryLegendAdapter(legendItems);
         categoriesLegendRecyclerView.setAdapter(legendAdapter);
-
-        pieChart.invalidate();
     }
 }

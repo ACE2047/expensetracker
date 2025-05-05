@@ -60,6 +60,9 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString("current_username", user.getUsername());
                     editor.apply();
 
+                    // Create default financial values if this is the first login for the user
+                    initializeUserFinancialInfoIfNeeded(user.getId());
+
                     // Navigate to main activity
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
@@ -77,5 +80,18 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    // Initialize default financial values for new users
+    private void initializeUserFinancialInfoIfNeeded(int userId) {
+        SharedPreferences prefs = getSharedPreferences("expense_tracker_user_" + userId, MODE_PRIVATE);
+        if (!prefs.contains("income")) {
+            // This appears to be the user's first login, set default values
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putFloat("income", 60000.0f);
+            editor.putFloat("balance", 3200.0f);
+            editor.putFloat("goal", 13000.0f);
+            editor.apply();
+        }
     }
 }

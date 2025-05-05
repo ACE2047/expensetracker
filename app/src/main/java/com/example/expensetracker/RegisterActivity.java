@@ -1,6 +1,7 @@
 package com.example.expensetracker;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -25,8 +26,10 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Initialize the database helper
         dbHelper = new ExpenseDBHelper(this);
 
+        // Find views from layout
         usernameInput = findViewById(R.id.usernameInput);
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
@@ -34,6 +37,7 @@ public class RegisterActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.registerButton);
         loginLink = findViewById(R.id.loginLink);
 
+        // Set up register button click listener
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -42,6 +46,7 @@ public class RegisterActivity extends AppCompatActivity {
                 String password = passwordInput.getText().toString().trim();
                 String confirmPassword = confirmPasswordInput.getText().toString().trim();
 
+                // Validate inputs
                 if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                     Toast.makeText(RegisterActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                     return;
@@ -56,7 +61,11 @@ public class RegisterActivity extends AppCompatActivity {
                 long userId = dbHelper.registerUser(username, email, password);
 
                 if (userId != -1) {
+                    // Initialize default financial values for the new user
+                    initializeUserFinancialInfo((int) userId);
+
                     Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
+
                     // Redirect to login
                     Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                     startActivity(intent);
@@ -67,6 +76,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        // Set up login link click listener
         loginLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,5 +85,18 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    // Initialize default financial values for new users
+    private void initializeUserFinancialInfo(int userId) {
+        SharedPreferences prefs = getSharedPreferences("expense_tracker_user_" + userId, MODE_PRIVATE);
+        if (!prefs.contains("income")) {
+            // Set default values
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putFloat("income", 60000.0f);
+            editor.putFloat("balance", 3200.0f);
+            editor.putFloat("goal", 13000.0f);
+            editor.apply();
+        }
     }
 }

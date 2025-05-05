@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-// Create this new class in your project
 public class CategoryLegendAdapter extends RecyclerView.Adapter<CategoryLegendAdapter.ViewHolder> {
 
     private List<CategoryLegendItem> items;
@@ -40,8 +39,8 @@ public class CategoryLegendAdapter extends RecyclerView.Adapter<CategoryLegendAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         CategoryLegendItem item = items.get(position);
         holder.colorView.setBackgroundColor(item.color);
-        holder.nameText.setText(item.name);
-        holder.nameText.setTextColor(Color.WHITE); // Add this line
+        holder.nameText.setText(item.name); // This now includes the percentage
+        holder.nameText.setTextColor(Color.WHITE);
     }
 
     @Override
